@@ -4,36 +4,50 @@
 #include <LiquidCrystal_I2C.h>
 #include "../utilities/ArrayWrapper.h"
 
-
-
 struct MenuItem
 {
-	const char* label;
+	const char *label;
 	void (*action)();
 };
 
-
 template <size_t N>
 class MenuHelper
-
 {
 private:
 	LiquidCrystal_I2C &_lcd;
-	ArrayWrapper<const char *, N> _items;
+	ArrayWrapper<MenuItem, N> _items;
 	size_t _selectedIndex = 0;
 
 public:
 	MenuHelper(
 		LiquidCrystal_I2C &lcd,
-		ArrayWrapper<const char *, N> &items)
+		ArrayWrapper<MenuItem, N> &items)
 		: _lcd(lcd), _items(items)
 	{
-
 	}
 
-	bool addItem(const char* item)
+	bool addItem(const char *label, void (*action)())
 	{
+		MenuItem item{label, action};
 		return _items.pushBack(item);
+	}
+
+	void select()
+	{
+		if (_items.count() == 0)
+			return;
+
+		MenuItem &item = _items[_selectedIndex];
+
+		if (items.action != nullptr)
+			items.action();
+	}
+
+	const char* currentLabel() const
+	{
+		if (_items.count() == 0) return "";
+
+		return _items[_selectedIndex].label;
 	}
 
 	void next()
@@ -57,19 +71,11 @@ public:
 			_selectedIndex--;
 	}
 
-	const char* current() const
-	{
-		if (_items.count() == 0)
-		return "";
-
-		return _items[_selectedIndex];
-	}
-
 	void printCurrent()
 	{
 		_lcd.clear();
 		_lcd.setCursor(0, 0);
-		_lcd.print(current());
+		_lcd.print(currentLabel());
 	}
 };
 
